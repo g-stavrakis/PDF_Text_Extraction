@@ -1,16 +1,17 @@
-import PyPDF2
+from typing import Any
+from PyPDF2 import PdfWriter, PdfReader
 from pdf2image import convert_from_path
 import pytesseract
 from PIL import Image
 
 class PdfImageExtractor:
-    def crop_image(self, element, pageObj):
+    def crop_image(self, element: Any, pageObj: PdfReader.page) -> None:
         """
         Crops an image element from a PDF page.
 
         Args:
-            element: The image element to be cropped.
-            pageObj: The PDF page object.
+            element (Any): The image element to be cropped.
+            pageObj (PdfReader.page): The PDF page object.
 
         Returns:
             None. Saves the cropped image as a PDF file.
@@ -19,13 +20,13 @@ class PdfImageExtractor:
         pageObj.mediabox.lower_left = (image_left, image_bottom)
         pageObj.mediabox.upper_right = (image_right, image_top)
 
-        cropped_pdf_writer = PyPDF2.PdfWriter()
+        cropped_pdf_writer = PdfWriter()
         cropped_pdf_writer.add_page(pageObj)
 
         with open('cropped_image.pdf', 'wb') as cropped_pdf_file:
             cropped_pdf_writer.write(cropped_pdf_file)
 
-    def convert_to_images(self, input_file):
+    def convert_to_images(self, input_file: str) -> None:
         """
         Converts a PDF file to images.
 
@@ -40,7 +41,7 @@ class PdfImageExtractor:
         output_file = "PDF_image.png"
         image.save(output_file, "PNG")
 
-    def image_to_text(self, image_path):
+    def image_to_text(self, image_path: str) -> str:
         """
         Extracts text from an image using OCR.
 

@@ -1,7 +1,8 @@
 import pdfplumber
+from typing import List
 
 class PdfTableExtractor:
-    def extract_table(self, pdf_path: str, page_num: int, table_num: int):
+    def extract_table(self, pdf_path: str, page_num: int, table_num: int) -> List[List[str]]:
         """
         Extracts a specific table from a specific page of a PDF file.
 
@@ -11,19 +12,19 @@ class PdfTableExtractor:
             table_num (int): The index of the table on the page.
 
         Returns:
-            The extracted table as a list of lists.
+            List[List[str]]: The extracted table as a list of lists, where each sublist represents a row.
         """
         with pdfplumber.open(pdf_path) as pdf:
             table_page = pdf.pages[page_num]
             table = table_page.extract_tables()[table_num]
         return table
 
-    def table_converter(self, table: list):
+    def table_converter(self, table: List[List[str]]) -> str:
         """
         Converts a table into a formatted string representation.
 
         Args:
-            table (list): The table to be converted, represented as a list of rows.
+            table (List[List[str]]): The table to be converted, represented as a list of rows.
 
         Returns:
             str: A string representation of the table.
