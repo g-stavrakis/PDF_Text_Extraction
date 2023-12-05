@@ -388,6 +388,20 @@ files = [
 ]
 
 [[package]]
+name = "pyprojroot"
+version = "0.3.0"
+description = "Project-oriented workflow in Python"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pyprojroot-0.3.0-py3-none-any.whl", hash = "sha256:c426b51b17ab4f4d4f95b479cf5b6c22df59bb58fbd4f01b37a6977d29b99888"},
+    {file = "pyprojroot-0.3.0.tar.gz", hash = "sha256:109705bb790968704958efcfc5ccce85d8e3dafa054897cc81371fcbbf56cb10"},
+]
+
+[package.dependencies]
+typing-extensions = "*"
+
+[[package]]
 name = "pytesseract"
 version = "0.3.10"
 description = "Python-tesseract is a python wrapper for Google's Tesseract-OCR"
@@ -402,7 +416,18 @@ files = [
 packaging = ">=21.3"
 Pillow = ">=8.0.0"
 
+[[package]]
+name = "typing-extensions"
+version = "4.8.0"
+description = "Backported and Experimental Type Hints for Python 3.8+"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "typing_extensions-4.8.0-py3-none-any.whl", hash = "sha256:8f92fc8806f9a6b641eaa5318da32b44d401efaac0f6678c9bc448ba3605faa0"},
+    {file = "typing_extensions-4.8.0.tar.gz", hash = "sha256:df8e4339e9cb77357558cbdbceca33c303714cf861d1eef15e1070055ae8b7ef"},
+]
+
 [metadata]
 lock-version = "2.0"
-python-versions = "3.10.13"
-content-hash = "d485bd4caf7ca8c1b9bbf92de0b91edb5f8ad20878f5e6f87301ef199e2e1c68"
+python-versions = "^3.11"
+content-hash = "c94bc95049cd489c2006e86a83ae930e0e3a248d6dc3fe52709e1c144cde7ba6"
