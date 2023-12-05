@@ -1,123 +1,88 @@
-import PyPDF2
-# To analyze the PDF layout and extract text
-from pdfminer.high_level import extract_pages, extract_text
-from pdfminer.layout import LTTextContainer, LTChar, LTRect, LTFigure
-# To extract text from tables in PDF
-import pdfplumber
-# To extract the images from the PDFs
-from PIL import Image
-from pdf2image import convert_from_path
-# To perform OCR to extract text from images
-import pytesseract
-# To remove the additional created files
 import os
+import PyPDF2
+import pdfplumber
+from pyprojroot import here
+from pdfminer.high_level import extract_pages
+from pdfminer.layout import LTTextContainer, LTFigure, LTRect
 
-class PdfTextManager:
-
-    # Create function to extract text
-    def text_extraction(self, element):
-        # Extracting the text from the in line text element
-        line_text = element.get_text()
-
-        # Find the formats of the text
-        # Initialize the list with all the formats appeared in the line of text
-        line_formats = []
-        for text_line in element:
-            if isinstance(text_line, LTTextContainer):
-                # Iterating through each character in the line of text
-                for character in text_line:
-                    if isinstance(character, LTChar):
-                        # Append the font name of the character
-                        line_formats.append(character.fontname)
-                        # Append the font size of the character
-                        line_formats.append(character.size)
-        # Find the unique font sizes and names in the line
-        format_per_line = list(set(line_formats))
-
-        # Return a tuple with the text in each line along with its format
-        return (line_text, format_per_line)
+from pdf_image_extractor import PdfImageExtractor
+from pdf_table_extractor import PdfTableExtractor
+from pdf_text_extractor import PdfTextExtractor
 
 
-class PdfTableManager:
-    # Extracting tables from the page
+# Assuming PdfTextExtractor, PdfImageExtractor, and PdfTableExtractor classes are defined as previously discussed
 
-    def extract_table(self, pdf_path, page_num, table_num):
-        # Open the pdf file
-        pdf = pdfplumber.open(pdf_path)
-        # Find the examined page
-        table_page = pdf.pages[page_num]
-        # Extract the appropriate table
-        table = table_page.extract_tables()[table_num]
+def process_pdf(pdf_path: str):
+    # Initialize the extractor classes
+    text_extractor = PdfTextExtractor()
+    image_extractor = PdfImageExtractor()
+    table_extractor = PdfTableExtractor()
 
-        return table
+    # Create a PDF reader object
+    pdf_reader = PyPDF2.PdfReader(pdf_path)
 
-    # Convert table into appropriate fromat
-    def table_converter(self, table):
-        table_string = ''
-        # Iterate through each row of the table
-        for row_num in range(len(table)):
-            row = table[row_num]
-            # Remove the line breaker from the wrapted texts
-            cleaned_row = [
-                item.replace('\n', ' ') if item is not None and '\n' in item else 'None' if item is None else item for
-                item in row]
-            # Convert the table into a string
-            table_string += ('|' + '|'.join(cleaned_row) + '|' + '\n')
-        # Removing the last line break
-        table_string = table_string[:-1]
-        return table_string
+    text_per_page = {}
+    for pagenum, page in enumerate(extract_pages(pdf_path)):
+        page_obj = pdf_reader.pages[pagenum]
+        page_text, line_format, text_from_images, text_from_tables, page_content = [], [], [], [], []
+        table_num, first_element, table_extraction_flag = 0, True, False
 
-    # Create a function to check if the element is in any tables present in the page
-    def is_element_inside_any_table(self, element, page, tables):
-        x0, y0up, x1, y1up = element.bbox
-        # Change the cordinates because the pdfminer counts from the botton to top of the page
-        y0 = page.bbox[3] - y1up
-        y1 = page.bbox[3] - y0up
-        for table in tables:
-            tx0, ty0, tx1, ty1 = table.bbox
-            if tx0 <= x0 <= x1 <= tx1 and ty0 <= y0 <= y1 <= ty1:
-                return True
-        return False
+        with pdfplumber.open(pdf_path) as pdf:
+            page_tables = pdf.pages[pagenum]
+            tables = page_tables.find_tables()
 
-    # Function to find the table for a given element
-    def find_table_for_element(self, element, page, tables):
-        x0, y0up, x1, y1up = element.bbox
-        # Change the cordinates because the pdfminer counts from the botton to top of the page
-        y0 = page.bbox[3] - y1up
-        y1 = page.bbox[3] - y0up
-        for i, table in enumerate(tables):
-            tx0, ty0, tx1, ty1 = table.bbox
-            if tx0 <= x0 <= x1 <= tx1 and ty0 <= y0 <= y1 <= ty1:
-                return i  # Return the index of the table
-        return None
+            page_elements = [(element.y1, element) for element in page._objs]
+            page_elements.sort(key=lambda a: a[0], reverse=True)
 
-class PdfImageManager:
+            for i, component in enumerate(page_elements):
+                pos, element = component[0], component[1]
 
-    # Create a function to crop the image elements from PDFs
-    def crop_image(self, element, pageObj):
-        # Get the coordinates to crop the image from PDF
-        [image_left, image_top, image_right, image_bottom] = [element.x0, element.y0, element.x1, element.y1]
-        # Crop the page using coordinates (left, bottom, right, top)
-        pageObj.mediabox.lower_left = (image_left, image_bottom)
-        pageObj.mediabox.upper_right = (image_right, image_top)
-        # Save the cropped page to a new PDF
-        cropped_pdf_writer = PyPDF2.PdfWriter()
-        cropped_pdf_writer.add_page(pageObj)
-        # Save the cropped PDF to a new file
-        with open('cropped_image.pdf', 'wb') as cropped_pdf_file:
-            cropped_pdf_writer.write(cropped_pdf_file)
+                if isinstance(element, LTTextContainer):
+                    if not table_extraction_flag:
+                        line_text, format_per_line = text_extractor.text_extraction(element)
+                        page_text.append(line_text)
+                        line_format.append(format_per_line)
+                        page_content.append(line_text)
 
-    # Create a function to convert the PDF to images
-    def convert_to_images(self, input_file, ):
-        images = convert_from_path(input_file)
-        image = images[0]
-        output_file = 'PDF_image.png'
-        image.save(output_file, 'PNG')
+                if isinstance(element, LTFigure):
+                    image_extractor.crop_image(element, page_obj)
+                    image_extractor.convert_to_images('cropped_image.pdf')
+                    image_text = image_extractor.image_to_text('PDF_image.png')
+                    text_from_images.append(image_text)
+                    page_content.append(image_text)
+                    page_text.append('image')
+                    line_format.append('image')
 
-    # Create a function to read text from images
-    def image_to_text(self, image_path):
-        # Read the image
-        img = Image.open(image_path)
-        # Extract the text from the image
-        text = pytesseract.image_to_string(img)
-        return text
+                if isinstance(element, LTRect):
+                    if first_element and (table_num + 1) <= len(tables):
+                        lower_side = page.bbox[3] - tables[table_num].bbox[3]
+                        upper_side = element.y1
+                        table = table_extractor.extract_table(pdf_path, pagenum, table_num)
+                        table_string = table_extractor.table_converter(table)
+                        text_from_tables.append(table_string)
+                        page_content.append(table_string)
+                        table_extraction_flag = True
+                        first_element = False
+                        page_text.append('table')
+                        line_format.append('table')
+                    elif element.y0 >= lower_side and element.y1 <= upper_side:
+                        pass
+                    elif not isinstance(page_elements[i + 1][1], LTRect):
+                        table_extraction_flag = False
+                        first_element = True
+                        table_num += 1
+
+        text_per_page['Page_' + str(pagenum)] = [page_text, line_format, text_from_images, text_from_tables,
+                                                 page_content]
+
+    # Clean up created files
+    os.remove('cropped_image.pdf')
+    os.remove('PDF_image.png')
+
+    return text_per_page
+
+if __name__ == "__main__":
+    # Example usage
+    pdf_path = str(here("./Example PDF.pdf"))
+    result = process_pdf(pdf_path)
+    print(''.join(result['Page_0'][4]))
