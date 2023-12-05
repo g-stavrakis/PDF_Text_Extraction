@@ -1,8 +1,10 @@
 from typing import Any
-from PyPDF2 import PdfWriter, PdfReader
-from pdf2image import convert_from_path
+
 import pytesseract
 from PIL import Image
+from PyPDF2 import PdfWriter, PdfReader
+from pdf2image import convert_from_path
+
 
 class PdfImageExtractor:
     def crop_image(self, element: Any, pageObj: PdfReader.pages) -> None:
@@ -16,14 +18,19 @@ class PdfImageExtractor:
         Returns:
             None. Saves the cropped image as a PDF file.
         """
-        [image_left, image_top, image_right, image_bottom] = [element.x0, element.y0, element.x1, element.y1]
+        [image_left, image_top, image_right, image_bottom] = [
+            element.x0,
+            element.y0,
+            element.x1,
+            element.y1,
+        ]
         pageObj.mediabox.lower_left = (image_left, image_bottom)
         pageObj.mediabox.upper_right = (image_right, image_top)
 
         cropped_pdf_writer = PdfWriter()
         cropped_pdf_writer.add_page(pageObj)
 
-        with open('cropped_image.pdf', 'wb') as cropped_pdf_file:
+        with open("cropped_image.pdf", "wb") as cropped_pdf_file:
             cropped_pdf_writer.write(cropped_pdf_file)
 
     def convert_to_images(self, input_file: str) -> None:
