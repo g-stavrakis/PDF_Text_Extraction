@@ -1,8 +1,12 @@
-from pdfminer.layout import LTChar, LTTextContainer
 from typing import Tuple, List
 
+from pdfminer.layout import LTChar, LTTextContainer
+
+
 class PdfTextExtractor:
-    def text_extraction(self, element: LTTextContainer) -> Tuple[str, List[any]]:
+    def text_extraction(
+            self, element: LTTextContainer
+    ) -> Tuple[str, List[any]]:
         """
         Extracts text and its formatting from a text container element.
 

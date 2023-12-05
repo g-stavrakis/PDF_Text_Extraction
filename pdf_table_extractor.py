@@ -1,8 +1,12 @@
-import pdfplumber
 from typing import List
 
+import pdfplumber
+
+
 class PdfTableExtractor:
-    def extract_table(self, pdf_path: str, page_num: int, table_num: int) -> List[List[str]]:
+    def extract_table(
+            self, pdf_path: str, page_num: int, table_num: int
+    ) -> List[List[str]]:
         """
         Extracts a specific table from a specific page of a PDF file.
 
@@ -29,10 +33,17 @@ class PdfTableExtractor:
         Returns:
             str: A string representation of the table.
         """
-        table_string = ''
+        table_string = ""
         for row in table:
-            cleaned_row = [item.replace('\n', ' ') if item is not None and '\n' in item else 'None' if item is None else item for item in row]
-            table_string += '|' + '|'.join(cleaned_row) + '|' + '\n'
+            cleaned_row = [
+                item.replace("\n", " ")
+                if item is not None and "\n" in item
+                else "None"
+                if item is None
+                else item
+                for item in row
+            ]
+            table_string += "|" + "|".join(cleaned_row) + "|" + "\n"
 
         table_string = table_string[:-1]  # Removing the last line break
         return table_string
