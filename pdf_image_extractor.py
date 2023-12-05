@@ -5,7 +5,7 @@ import pytesseract
 from PIL import Image
 
 class PdfImageExtractor:
-    def crop_image(self, element: Any, pageObj: PdfReader.page) -> None:
+    def crop_image(self, element: Any, pageObj: PdfReader.pages) -> None:
         """
         Crops an image element from a PDF page.
 
