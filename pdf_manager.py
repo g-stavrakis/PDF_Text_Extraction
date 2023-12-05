@@ -60,7 +60,17 @@ class PdfManager:
         except FileNotFoundError:
             pass
 
-    def process_pdf(self) -> Dict[str, List[List[str]]]:
+    def process_pdf(self, page_number: int = None) -> str:
+        """
+        Processes the PDF and returns extracted text.
+
+        Args:
+            page_number (int, optional): The specific page number to extract text from.
+                                         If None, text from all pages is returned.
+
+        Returns:
+            str: Extracted text from the specified page(s).
+        """
         pdf_reader = PyPDF2.PdfReader(self.pdf_path)
         text_per_page = {}
 
@@ -102,13 +112,21 @@ class PdfManager:
 
             text_per_page['Page_' + str(pagenum)] = [page_text, line_format, text_from_images, text_from_tables, page_content]
 
+
         self.cleanup()
 
-        return text_per_page
+        if page_number is not None:
+            # Return text from a specific page
+            return ''.join(text_per_page.get(f'Page_{page_number}', [''])[4])
+        else:
+            # Concatenate text from all pages
+            all_text = ''.join([''.join(page_content[4]) for page_content in text_per_page.values()])
+            return all_text
+
 
 if __name__ == "__main__":
     # Example usage
     pdf_path = str(here("./Example PDF.pdf"))
     pdf_manager = PdfManager(pdf_path)
     result = pdf_manager.process_pdf()
-    print(''.join(result['Page_0'][4]))
+    print(result)
