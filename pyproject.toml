@@ -18,6 +18,7 @@ pyprojroot = "^0.3.0"
 fuzzywuzzy = "^0.18.0"
 python-levenshtein = "^0.23.0"
 rapidfuzz = "^3.5.2"
+jarowinkler = "^2.0.1"
 
 
 [build-system]

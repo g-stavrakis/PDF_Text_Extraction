@@ -7,7 +7,7 @@ import pdfplumber
 import pytesseract
 from PIL import Image
 from PyPDF2 import PdfReader, PdfWriter
-from rapidfuzz import fuzz
+from jarowinkler import jarowinkler_similarity
 from pdf2image import convert_from_path
 from pdfminer.high_level import extract_pages
 from pdfminer.layout import LTChar, LTTextContainer, LTTextBoxHorizontal
@@ -227,7 +227,7 @@ class PdfManager:
         unique_content = []
         for content in page_content:
             if not any(
-                fuzz.token_set_ratio(content, other_content)
+                jarowinkler_similarity(content, other_content)
                 > similarity_threshold
                 for other_content in unique_content
             ):
