@@ -7,7 +7,7 @@ import pdfplumber
 import pytesseract
 from PIL import Image
 from PyPDF2 import PdfReader, PdfWriter
-from fuzzywuzzy import fuzz
+from rapidfuzz import fuzz
 from pdf2image import convert_from_path
 from pdfminer.high_level import extract_pages
 from pdfminer.layout import LTChar, LTTextContainer, LTTextBoxHorizontal
