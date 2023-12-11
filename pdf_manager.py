@@ -88,7 +88,10 @@ class PdfTableExtractor:
                 for item in row
             ]
             table_string += "|" + "|".join(cleaned_row) + "|" + "\n"
-        return table_string[:-1]
+
+        table_string = "\n\n" + table_string + "\n"
+
+        return table_string
 
 
 class PdfImageExtractor:
@@ -476,8 +479,6 @@ if __name__ == "__main__":
     # Example usage
     start_time = time.time()
     pdf_path = str(here("./Example PDF.pdf"))
-    # pdf_path = str(here("./Example PDF.pdf"))
-    pdf_path = "/Users/michael/Downloads/test_0009903AAJ2022092716483274.pdf"
     pdf_manager = PdfManager(pdf_path)
     result = pdf_manager.process_pdf()
     end_time = time.time()
